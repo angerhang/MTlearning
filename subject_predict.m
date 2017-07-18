@@ -43,10 +43,10 @@ test_y = mat2cell(model_all_bands_bp.predictions_observations_update_subj_upd20.
          observations_of_updated{subject_topredict}, 1, size(test_x{1}, 2));
   
 % normalize the features if the normed option is being used 
-if model_opt == 2
-    train_x = normalize_feature(train_x, ...
-              model_all_bands_bp.features.baseline, subject_topredict);   
-end
+% if model_opt == 2
+%     train_x = normalize_feature(train_x, ...
+%               model_all_bands_bp.features.baseline, subject_topredict);   
+% end
 
 %% model construction      
 disp(['********************* Covariance update: ', order{order_idx}, ... 
@@ -60,28 +60,26 @@ regression_model.printswitches;
 disp('Training regression prior...')  
 regression_model.fit_prior(train_x, train_y);
 
-    % prior error 
-    prior_predictions = regression_model.prior_predict(test_x{1});
-    prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
-    fprintf('rmse on new task for prior model: %.2f\n',  ... 
-    prior_error);
+% prior error 
+prior_predictions = regression_model.prior_predict(test_x{1});
+prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
+fprintf('rmse on new task for prior model: %.2f\n',  ... 
+prior_error);
 
 % Code to fit the new task (with cross-validated lambda)
 % only optimize in model 1
 if model_opt == 1
-    new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0);
+    new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0, 'verbose', true);
+    
     
     % Classifying after the new task update
     predictions = new_regression.predict(test_x{1});
     error = sqrt(mean((predictions - test_y{1}').^2));
     fprintf('rmse on new task for regression model: %.2f\n',  ... 
     error);
+
 else 
     % Classifying after the new task update
-    prior_predictions = regression_model.prior_predict(test_x{1});
-    prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
-    fprintf('rmse on new task for regression model: %.2f\n',  ... 
-    prior_error);
     predictions =1;
     error = 1;
 end

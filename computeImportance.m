@@ -2,8 +2,8 @@
 % trial baseline recording using uLSIF 
 
 %% load data
-datapath = strcat(pwd, '/../data/');
-realdata_path = strcat(datapath, 'mt_final');
+datapath = strcat(pwd, '/results/');
+realdata_path = strcat(datapath, 'reduced');
 load (realdata_path);
 
 lsif_path = strcat(pwd, '/../uLSIF');
@@ -19,12 +19,13 @@ wh_x_de = 1;
 % should be selected from the ith row.
 fprintf('Starting computation\n');
 for i=1:n_subjects
-    x_nu = model_all_bands_bp.features.baseline{i};
+    x_nu = model_all_bands_bp.features.mov{i};
+    x_nu = x_nu(:, 1:20);
     
     for j=1:n_subjects
         if i ~= j
-            x_de = model_all_bands_bp.features.baseline{j};
-            [wh_x_de, ~] = uLSIF(x_de, x_nu, [], logspace(-3,2,25),  logspace(-3,2,25));
+            x_de = model_all_bands_bp.features.mov{j};
+             [wh_x_de, ~] = uLSIF(x_de, x_nu, [], logspace(-3,2,25),  logspace(-3,2,25));
             fprintf('uls\n');
             wh_x_de = sort(wh_x_de);
             % might need to normalize the subject trial 
@@ -39,7 +40,7 @@ end
 % two conditional densities functions. 
 %peaks = max(importance, [], 2);
 % importance = bsxfun(@rdivide, importance, peaks);
-save('../data/new_importance', 'importance');
+save('results/reduced_mov_importance', 'importance');
 
 
 

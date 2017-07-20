@@ -22,6 +22,7 @@ fprintf('Processing subject %d ...\n', subject_topredict)
 % Instantiate models
 % n_its = 10;
 order = {'l2','l2-trace','l1-diag','l1'};
+number_f = 57;
 
 % data spliting 
 % train data 
@@ -33,12 +34,12 @@ train_y = original_information_struct_am.log_of_narj_jerk_data(subject_to_train)
 
 % individual data for optimization 
 test_x = model_all_bands_bp.features.mov(subject_topredict);
-opt_x = mat2cell(test_x{1}(:, 1:20), 590);
+opt_x = mat2cell(test_x{1}(:, 1:20), number_f);
 opt_y = mat2cell(original_information_struct_am. ... 
                  log_of_narj_jerk_data{subject_topredict}(1:20, :), 20, 1);
 
 % test data 
-test_x = mat2cell(test_x{1}(:, 21:end), 590);
+test_x = mat2cell(test_x{1}(:, 21:end), number_f);
 test_y = mat2cell(model_all_bands_bp.predictions_observations_update_subj_upd20. ... 
          observations_of_updated{subject_topredict}, 1, size(test_x{1}, 2));
   

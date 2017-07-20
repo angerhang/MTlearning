@@ -1,5 +1,5 @@
 function [prior_predictions, prior_error, predictions, error] = subject_predict(subject_topredict, order_idx, ...
-             model_all_bands_bp, original_information_struct_am, model_opt)
+             model_all_bands_bp, original_information_struct_am, model_opt, imp)
 % takes a subject id and train on the other subjects
 % after being optimized on the first 20 trials, returns the predictions
 % The data input format: for the linear model we have 
@@ -27,6 +27,7 @@ number_f = 57;
 % data spliting 
 % train data 
 subject_to_train = 1:26;
+imp = imp(subject_to_train~=subject_topredict);
 subject_to_train = subject_to_train(subject_to_train~=subject_topredict);
 train_x = model_all_bands_bp.features.mov(subject_to_train);
 % only select the features after the 20th timestep
@@ -59,7 +60,7 @@ regression_model.printswitches;
 
 % Code to fit the prior (training on the first 4)
 disp('Training regression prior...')  
-regression_model.fit_prior(train_x, train_y);
+regression_model.fit_prior(train_x, train_y, 'imp', imp);
 
 % prior error 
 prior_predictions = regression_model.prior_predict(test_x{1});
@@ -70,7 +71,8 @@ prior_error);
 % Code to fit the new task (with cross-validated lambda)
 % only optimize in model 1
 if model_opt == 1
-    new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0, 'verbose', true);
+    new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1}, ... 
+        'ml', 0, 'verbose', true);
     
     
     % Classifying after the new task update

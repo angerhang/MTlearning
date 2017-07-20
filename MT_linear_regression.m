@@ -75,6 +75,11 @@ classdef MT_linear_regression < MT_baseclass
                 ycell{i} = reshape(ycell{i},[],1);
             end
             
+            imp = invarargin(varargin, 'imp');
+            if isempty(imp)
+                imp = NaN;
+            end
+            
             lambda = invarargin(varargin,'lambda');
             if isempty(lambda)
                 lambda = NaN;
@@ -112,9 +117,11 @@ classdef MT_linear_regression < MT_baseclass
                     % obj.w was already initialized
                     obj.init_prior(size(Xcell{1},1),obj.initVal);
                 end
-                prior = fit_prior@MT_baseclass(obj, Xcell, ycell, 'lambda', lambda);
+                prior = fit_prior@MT_baseclass(obj, Xcell, ycell,  ... 
+                    'lambda', lambda, 'imp', imp);
             else
-                prior = fit_prior@MT_baseclass(obj, Xcell, ycell, 'lambda', lambda);
+                prior = fit_prior@MT_baseclass(obj, Xcell, ycell, ... 
+                    'lambda', lambda, 'imp', imp);
             end
         end
         
@@ -125,9 +132,9 @@ classdef MT_linear_regression < MT_baseclass
             b = converged < (obj.maxNumVar * length(mu));
         end
         
-        function [w, error] = fit_model(obj, X, y, lambda)
+        function [w, error] = fit_model(obj, X, y, lambda, imp)
             Ax=obj.prior.sigma*X;
-            w = ((1 / lambda)*Ax*X'+eye(size(X,1)))\((1 / lambda)*Ax*y + obj.prior.mu);
+            w = ((imp / lambda)*Ax*X'+eye(size(X,1)))\((imp / lambda)*Ax*y + obj.prior.mu);
             error = obj.loss(w, X, y);
         end
         
@@ -160,7 +167,7 @@ classdef MT_linear_regression < MT_baseclass
                 while sum(or(abs(out.w) > (prev_w+obj.maxItVar*prev_w), abs(out.w) < (prev_w - obj.maxItVar * prev_w)))...
                          && count < obj.nIts
                     prev_w = abs(out.w);
-                    [out.w, out.loss] = obj.fit_model(X, y_train, out.lambda);
+                    [out.w, out.loss] = obj.fit_model(X, y_train, out.lambda, 1);
                     out.lambda = 2*out.loss;
                     count = count+1;
                     if obj.verbose
@@ -168,9 +175,9 @@ classdef MT_linear_regression < MT_baseclass
                     end
                 end
             else
-                out.lambda = lambdaCV(@(X,y,lambda)(obj.fit_model(X{1},y{1},lambda)),...
+                out.lambda = lambdaCV(@(X,y,lambda, imp)(obj.fit_model(X{1},y{1},lambda, 1)),...
                     @(w, X, y)(obj.loss(w, X{1}, y{1})),{X},{y});
-                [out.w, out.loss] = obj.fit_model(X, y, out.lambda);
+                [out.w, out.loss] = obj.fit_model(X, y, out.lambda, 1);
             end
             if obj.dimReduce
                 out.predict = @(X)(obj.predict(out.w, obj.W'*X));

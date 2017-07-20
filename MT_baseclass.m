@@ -116,6 +116,7 @@ classdef MT_baseclass < handle
             %   prior: struct with final prior values.
             
             lambda = invarargin(varargin, 'lambda');
+            imp = invarargin(varargin, 'imp');
             
             its = 0;
             error = zeros(length(Xcell),1);
@@ -144,8 +145,8 @@ classdef MT_baseclass < handle
                     % recursive...)
                     updateLambda = 0;
                     disp('No lambda value given. Using cross-validation to estimate.');
-                    childObj.prior.lambda = lambdaCV(@(X,y,lambda)(childObj.multi_task_f(childObj,X,y,lambda)),...
-                        @(W, X, y)(childObj.multi_task_loss(childObj,W,X,y)),Xcell,ycell,childObj.cvParams{:});
+                    childObj.prior.lambda = lambdaCV(@(X,y,lambda, imp)(childObj.multi_task_f(childObj,X,y,lambda, imp)),...
+                        @(W, X, y)(childObj.multi_task_loss(childObj,W,X,y)),Xcell,ycell,childObj.cvParams{:}, 'imp', imp);
                     
                 end
             else
@@ -159,11 +160,13 @@ classdef MT_baseclass < handle
                 prev_prior = childObj.prior;
                 if childObj.parallel
                     parfor i = 1:length(Xcell)
-                        [outputs{i}, error(i)] = childObj.fit_model(Xcell{i}, ycell{i}, childObj.prior.lambda);
+                        [outputs{i}, error(i)] = childObj.fit_model(Xcell{i}, ycell{i}, ... 
+                            childObj.prior.lambda, imp(i));
                     end
                 else
                     for i = 1: length(Xcell)
-                        [outputs{i}, error(i)] = childObj.fit_model(Xcell{i}, ycell{i}, childObj.prior.lambda);
+                        [outputs{i}, error(i)] = childObj.fit_model(Xcell{i}, ycell{i}, ...
+                            childObj.prior.lambda, imp(i));
                     end
                 end
                 if updateLambda
@@ -319,8 +322,8 @@ classdef MT_baseclass < handle
             y_switched = tmp;
         end
         
-        function [W] = multi_task_f(obj, Xtrain, Ytrain, lambda)
-            prior = obj.fit_prior(Xtrain, Ytrain, 'lambda', lambda, 'cv', 1);
+        function [W] = multi_task_f(obj, Xtrain, Ytrain, lambda, imps)
+            prior = obj.fit_prior(Xtrain, Ytrain, 'lambda', lambda, 'cv', 1, 'imp', imps);
             W = prior.W;
         end
         

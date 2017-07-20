@@ -28,6 +28,7 @@ if isempty(v)
     v=0;
 end
 
+imp = invarargin(varargin, 'imp');
 
 bs = invarargin(varargin,'bootstrap');
 if isempty(bs)
@@ -102,7 +103,7 @@ if ~parallel
                 triallabels{d}=labels{d}(setdiff(1:length(labels{d}),testind));
             end
             
-            ret_obj = f(trialdata, triallabels, lrange(l));
+            ret_obj = f(trialdata, triallabels, lrange(l), imp);
             cvloss(it,l)=loss(ret_obj,testdata,testlabels);
         end
     end

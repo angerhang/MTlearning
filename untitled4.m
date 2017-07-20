@@ -1,13 +1,13 @@
 clc;
 clear variables;
 
-comnorm_predict(1);
+comnorm_predict(1, 1);
 
 clc;
 clear variables;
-comnorm_predict(2);
+comnorm_predict(1, 2);
 
 
 clc;
 clear variables;
-comnorm_predict(3);
+comnorm_predict(1, 3);

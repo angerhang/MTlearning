@@ -66,8 +66,10 @@ classdef MT_linear_regression < MT_baseclass
             obj.prior.W = [];
         end
         
-        function prior = fit_prior(obj, Xcell, ycell,varargin)
+        function prior = fit_prior(obj, Xcell, ycell, varargin)
             % sanity checks
+            % fit prior processes the additonal linear regression paras
+            % and pass the data to the baseclass fit_prior 
             assert(length(Xcell) == length(ycell), 'unequal data and labels arrays');
             assert(length(Xcell) > 1, 'only one dataset provided');
             for i = 1:length(Xcell)

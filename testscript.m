@@ -1,3 +1,10 @@
+% The data input format: for the linear model we have 
+% data in the form of features * labels. In this test data
+% we have 24 by 300. We can understand for each trial we have
+% 24 features, and we have 300 trials with 5 subjects. 
+% For the bilinear model, the input is of the form 
+% electrodes * features * labels, so the label here can be considered 
+% as the trial label in a reocrding sessionn
 %clear
 clc
 fprintf('Script started...\n')
@@ -19,7 +26,7 @@ order = {'l2','l2-trace','l1-diag','l1'};
 for i = 1:length(order)
     disp(['********************* Covariance update: ', order{i}, '*************************']);
     linear_model{i} = MT_linear('dim_reduce',1,'n_its',1e2,'lambda_ml',0,'cov_flag',order{i},'zero_mean',1);
-    regression_model{i} = MT_linear_regression('dim_reduce',1,'n_its',1e2,'lambda_ml',0,'cov_flag',order{i},'zero_mean',1);
+    regression_model{i} = MT_linear_regression('dim_reduce',1,'n_its',1e2,'lambda_ml',0,'cov_flag',order{i},'zero_mean',0);
     log_model{i} = MT_logistic('dim_reduce',0,'n_its',n_its,'lambda_ml',0,'cov_flag',order{i});
     disp('Confirm prior computation switches: ');
     linear_model{i}.printswitches;
@@ -39,11 +46,21 @@ for i = 1:length(order)
     fprintf('Prior accuracies on held-out session: \n Linear: %.2f\n Logistic: %.2f\n', pacc_lin, pacc_log);
     fprintf('Prior rmse on held-out session for regression model: %.2f\n', sqrt(mean((regression_model{i}.prior_predict(T_X2d{5}) - T_y{5}).^2)));
     
+    fprintf('rmse on new task for regression model: %.2f\n', sqrt(mean((regression_model{i}.prior_predict(T_X2d{5}) - T_y{5}).^2)));
+
     % Code to fit the new task (with cross-validated lambda)
     fitted_new_linear_task = linear_model{i}.fit_new_task(T_X2d{5}, T_y{5}, 'ml', 0);
     fitted_new_log_task = log_model{i}.fit_new_task(T_X2d{5},T_y{5}, 'ml', 0);
     new_regression = regression_model{i}.fit_new_task(T_X2d{5},T_y{5},'ml',0);
     
+    predictions_prior =  regression_model{i}.prior_predict(T_X2d{5});
+    predictions =  new_regression.predict(T_X2d{5});
+    zero_predictions = predictions * 0;
+    
+    sqrt(mean(predictions_prior - T_y{5}).^2)
+    sqrt(mean(predictions - T_y{5}).^2)
+    sqrt(mean(zero_predictions - T_y{5}).^2)
+
     % Classifying after the new task update
     fprintf('New task *training set* accuracy: \n Linear: %.2f\nLogistic: %.2f\n',...
     mean(fitted_new_linear_task.predict(T_X2d{5}) == T_y{5}), ...

@@ -185,6 +185,7 @@ classdef MT_linear_regression < MT_baseclass
             if obj.dimReduce
                 X = obj.W'*X;
             end
+            
             y = obj.predict(obj.prior.mu, X);
         end
         

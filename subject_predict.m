@@ -25,6 +25,14 @@ order = {'l2','l2-trace','l1-diag','l1'};
 
 % data spliting 
 % train data 
+if model_opt == 2
+    % this might need to change when changing the base vector size
+    feature_n = 720;
+else 
+    % original data set feature
+    feature_n = 590;
+end
+
 subject_to_train = 1:26;
 subject_to_train = subject_to_train(subject_to_train~=subject_topredict);
 train_x = model_all_bands_bp.features.mov(subject_to_train);
@@ -33,20 +41,15 @@ train_y = original_information_struct_am.log_of_narj_jerk_data(subject_to_train)
 
 % individual data for optimization 
 test_x = model_all_bands_bp.features.mov(subject_topredict);
-opt_x = mat2cell(test_x{1}(:, 1:20), 590);
+opt_x = mat2cell(test_x{1}(:, 1:20), feature_n);
 opt_y = mat2cell(original_information_struct_am. ... 
                  log_of_narj_jerk_data{subject_topredict}(1:20, :), 20, 1);
 
 % test data 
-test_x = mat2cell(test_x{1}(:, 21:end), 590);
-test_y = mat2cell(model_all_bands_bp.predictions_observations_update_subj_upd20. ... 
-         observations_of_updated{subject_topredict}, 1, size(test_x{1}, 2));
+test_x = mat2cell(test_x{1}(:, 21:end), feature_n);
+test_y = mat2cell(original_information_struct_am. ... 
+    log_of_narj_jerk_data{subject_topredict}(21:end, :), size(test_x{1}, 2), 1);
   
-% normalize the features if the normed option is being used 
-if model_opt == 2
-    train_x = normalize_feature(train_x, ...
-              model_all_bands_bp.features.baseline, subject_topredict);   
-end
 
 %% model construction      
 disp(['********************* Covariance update: ', order{order_idx}, ... 
@@ -60,15 +63,15 @@ regression_model.printswitches;
 disp('Training regression prior...')  
 regression_model.fit_prior(train_x, train_y);
 
-    % prior error 
-    prior_predictions = regression_model.prior_predict(test_x{1});
-    prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
-    fprintf('rmse on new task for prior model: %.2f\n',  ... 
-    prior_error);
+% prior error 
+prior_predictions = regression_model.prior_predict(test_x{1});
+prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
+fprintf('rmse on new task for prior model: %.2f\n',  ... 
+prior_error);
 
 % Code to fit the new task (with cross-validated lambda)
 % only optimize in model 1
-if model_opt == 1
+if ((model_opt == 1) || (model_opt == 2))
     new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0);
     
     % Classifying after the new task update

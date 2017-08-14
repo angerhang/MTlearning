@@ -15,8 +15,9 @@ n_subject = 26;
 
 if extract_mode == 1
     
-    htjob.addJob(1);
-    htjob.addJob(2);
+    for i=1:n_subject
+        comnorm_predict(1, i);
+    end
     
 elseif extract_mode == 2
     addpath('/usr/local/share/htcondor_matlab/');
@@ -25,8 +26,9 @@ elseif extract_mode == 2
     % memroy 4GB
     htjob.bid = 5;
 
-    htjob.addJob(1);
-    htjob.addJob(2);
+    for i=1:n_subject
+        comnorm_predict(2, i);
+    end
 
     htjob.run;
 else  

@@ -14,7 +14,6 @@ prior_predicted_labels = cell(num_sub, 1);
 order_idx = 2;
 
 % load data
-basepath = pwd;
 datapath = strcat(pwd, '/../data/');
 if model_opt == 1
 else 

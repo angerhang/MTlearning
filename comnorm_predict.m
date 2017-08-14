@@ -66,5 +66,5 @@ else
 end
 
 myT = toc;
-fprintf("Model completed for subject %d. Time used: %f", subject_id, myT);
+fprintf('Model completed for subject %d. Time used: %f', subject_id, myT);
 end

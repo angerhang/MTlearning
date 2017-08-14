@@ -27,7 +27,7 @@ elseif extract_mode == 2
     htjob.bid = 5;
 
     for i=1:n_subject
-        comnorm_predict(2, i);
+        htjob.addJob(2, i);
     end
 
     htjob.run;

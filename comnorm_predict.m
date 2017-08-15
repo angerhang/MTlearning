@@ -4,12 +4,6 @@ function [errors] = comnorm_predict(model_opt, subject_id)
 % mt_linear model after the model is being optimized using the first 
 % 20 trials to do benchmark comparison 
 
-% constant init 
-% num_sub = 26;
-% predicted_labels = cell(num_sub, 1);
-% prior_predicted_labels = cell(num_sub, 1);
-
-% model_opt = 2; % baseline linear regression
 % covariance flag: {'l2','l2-trace','l1-diag','l1'};
 order_idx = 2;
 tic;
@@ -58,11 +52,17 @@ else
     sparse_prior_predictions = prior_predictions;
     sparse_prior_erros = prior_errors;
     
-    sparse_p_path = strcat('../data/mtl/sparse_p', num2str(subject_id), '.mat');
-    sparse_e_path = strcat('../data/mtl/sparse_e', num2str(subject_id), '.mat');
-    
-    save(sparse_p_path, 'sparse_prior_predictions');
-    save(sparse_e_path, 'sparse_prior_erros');
+    sparse_pp_path = strcat('../data/mtl/sparse_p', num2str(subject_id), '.mat');
+    sparse_pe_path = strcat('../data/mtl/sparse_e', num2str(subject_id), '.mat');
+    sparse_p_path = strcat('../data/mtl/baseline_p', ...
+                            num2str(subject_id), '.mat');
+    sparse_e_path = strcat('../data/mtl/baseline_e', ...
+                            num2str(subject_id), '.mat'); 
+                        
+    save(sparse_pp_path, 'sparse_prior_predictions');
+    save(sparse_pe_path, 'sparse_prior_erros');
+    save(sparse_p_path, 'predictions');
+    save(sparse_e_path, 'errors');
 end
 
 myT = toc;

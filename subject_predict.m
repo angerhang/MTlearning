@@ -13,14 +13,14 @@ function [prior_predictions, prior_error, predictions, error] = subject_predict(
 %       order_idx: the covariance index 
 %       model_all_bands_bp: the EEG feature
 %       original_information_struct_am: the data labels 
-%       model_opt: toggle for normed or baseline model. 1 for baseline 
-%                  2 for the normed model.
+%       model_opt: 1 for baseline 
+%                  2 for the sparse encoded model.
 
 %% model prep
 fprintf('Processing subject %d ...\n', subject_topredict)
 
 % Instantiate models
-% n_its = 10;
+n_its = 5e2;
 order = {'l2','l2-trace','l1-diag','l1'};
 
 % data spliting 
@@ -54,7 +54,7 @@ test_y = mat2cell(original_information_struct_am. ...
 %% model construction      
 disp(['********************* Covariance update: ', order{order_idx}, ... 
        '*************************']);
-regression_model = MT_linear_regression('dim_reduce',1,'n_its',1e3, ... 
+regression_model = MT_linear_regression('dim_reduce',1,'n_its', n_its, ... 
               'lambda_ml',0,'cov_flag',order{order_idx},'zero_mean',0);
 disp('Confirm prior computation switches: ');
 regression_model.printswitches;
@@ -71,24 +71,15 @@ prior_error);
 
 % Code to fit the new task (with cross-validated lambda)
 % only optimize in model 1
-if ((model_opt == 1) || (model_opt == 2))
-    new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0);
-    
-    % Classifying after the new task update
-    predictions = new_regression.predict(test_x{1});
-    error = sqrt(mean((predictions - test_y{1}').^2));
-    fprintf('rmse on new task for regression model: %.2f\n',  ... 
-    error);
-else 
-    % Classifying after the new task update
-    prior_predictions = regression_model.prior_predict(test_x{1});
-    prior_error = sqrt(mean((prior_predictions - test_y{1}').^2));
-    fprintf('rmse on new task for regression model: %.2f\n',  ... 
-    prior_error);
-    predictions =1;
-    error = 1;
-end
+% in theory model 2's prior model performance should be comparable
+% with that of the updated baseline model
+new_regression = regression_model.fit_new_task(opt_x{1}, opt_y{1},'ml',0);
 
+% Classifying after the new task update
+predictions = new_regression.predict(test_x{1});
+error = sqrt(mean((predictions - test_y{1}').^2));
+fprintf('rmse on new task for regression model: %.2f\n',  ... 
+error);
 
 end
 
